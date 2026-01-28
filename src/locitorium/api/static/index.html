@@ -60,37 +60,293 @@
     <section class="section docs" id="docs">
       <div class="section-title">
         <span class="section-emoji">📚</span>
-        <h2>Docs</h2>
+        <h2>API Documentation</h2>
       </div>
-      <p class="section-desc">Call the API to resolve location mentions without leaving this page.</p>
-      <div class="docs-grid">
-        <div class="doc-card">
-          <h3>Endpoint</h3>
-          <p><strong>GET</strong> /api</p>
+      
+      <div class="docs-content">
+        <div class="docs-section">
+          <h3>Resolve locations from text</h3>
+          <p>Extract and resolve location mentions from unstructured text using LLM-based extraction and OpenStreetMap grounding.</p>
+          
+          <div class="endpoint-box">
+            <span class="http-method">GET</span>
+            <code class="endpoint-path">/api</code>
+          </div>
         </div>
-        <div class="doc-card">
-          <h3>Query Parameters</h3>
-          <ul>
-            <li><strong>q</strong> (required): Text to analyze.</li>
-            <li><strong>model</strong> (optional): Ollama model name.</li>
-          </ul>
+
+        <div class="docs-section">
+          <h3>Parameters</h3>
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Required</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>q</code></td>
+                <td>string</td>
+                <td><span class="badge-required">Required</span></td>
+                <td>The text to analyze for location mentions. Must be at least 1 character and no more than 2000 characters.</td>
+              </tr>
+              <tr>
+                <td><code>model</code></td>
+                <td>string</td>
+                <td><span class="badge-optional">Optional</span></td>
+                <td>Ollama model name (e.g., <code>granite4:3b</code>, <code>ministral-3:3b</code>). Defaults to <code>granite4:3b</code>.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="doc-card">
-          <h3>Response Overview</h3>
-          <ul>
-            <li><strong>doc_id</strong>: Unique request ID.</li>
-            <li><strong>model_info</strong>: Model and service metadata.</li>
-            <li><strong>results</strong>: Resolved mentions list.</li>
-          </ul>
+
+        <div class="docs-section">
+          <h3>Response</h3>
+          <p>Returns a JSON object containing resolved location information.</p>
+          
+          <h4>Response Schema</h4>
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>doc_id</code></td>
+                <td>string</td>
+                <td>Unique identifier for this request.</td>
+              </tr>
+              <tr>
+                <td><code>model_info</code></td>
+                <td>object</td>
+                <td>Metadata about the models and services used (see ModelInfo below).</td>
+              </tr>
+              <tr>
+                <td><code>results</code></td>
+                <td>array</td>
+                <td>List of resolved location mentions (see Result Object below).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>ModelInfo Object</h4>
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>ollama_model</code></td>
+                <td>string</td>
+                <td>Name of the Ollama model used for extraction.</td>
+              </tr>
+              <tr>
+                <td><code>ollama_base_url</code></td>
+                <td>string</td>
+                <td>Base URL of the Ollama service.</td>
+              </tr>
+              <tr>
+                <td><code>nominatim_base_url</code></td>
+                <td>string</td>
+                <td>Base URL of the Nominatim (OpenStreetMap) service.</td>
+              </tr>
+              <tr>
+                <td><code>config_hash</code></td>
+                <td>string</td>
+                <td>Hash of the configuration used for this request.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Result Object</h4>
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>mention_id</code></td>
+                <td>string</td>
+                <td>Unique identifier for this mention.</td>
+              </tr>
+              <tr>
+                <td><code>mention</code></td>
+                <td>string</td>
+                <td>The extracted place name from text.</td>
+              </tr>
+              <tr>
+                <td><code>status</code></td>
+                <td>string</td>
+                <td>Resolution status: <code>resolved</code>, <code>no_candidate</code>, <code>rejected</code>, <code>invalid_output</code>, or <code>timeout</code>.</td>
+              </tr>
+              <tr>
+                <td><code>selected</code></td>
+                <td>object | null</td>
+                <td>The best matching location candidate (see SelectedCandidate below). Null if status is not <code>resolved</code>.</td>
+              </tr>
+              <tr>
+                <td><code>candidates</code></td>
+                <td>array</td>
+                <td>Ranked list of alternative location candidates (see Candidate below).</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>SelectedCandidate Object</h4>
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>osm_type</code></td>
+                <td>string</td>
+                <td>OpenStreetMap type (e.g., <code>relation</code>, <code>way</code>, <code>node</code>).</td>
+              </tr>
+              <tr>
+                <td><code>osm_id</code></td>
+                <td>integer | string</td>
+                <td>OpenStreetMap ID.</td>
+              </tr>
+              <tr>
+                <td><code>lat</code></td>
+                <td>float | string</td>
+                <td>Latitude coordinate.</td>
+              </tr>
+              <tr>
+                <td><code>lon</code></td>
+                <td>float | string</td>
+                <td>Longitude coordinate.</td>
+              </tr>
+              <tr>
+                <td><code>bbox</code></td>
+                <td>array</td>
+                <td>Bounding box as [min_lat, max_lat, min_lon, max_lon].</td>
+              </tr>
+              <tr>
+                <td><code>display_name</code></td>
+                <td>string</td>
+                <td>Human-readable location name.</td>
+              </tr>
+              <tr>
+                <td><code>country_code</code></td>
+                <td>string | null</td>
+                <td>ISO 3166-1 alpha-2 country code (uppercase).</td>
+              </tr>
+              <tr>
+                <td><code>confidence</code></td>
+                <td>float | null</td>
+                <td>Confidence score for the selection.</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4>Candidate Object</h4>
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>rank</code></td>
+                <td>integer</td>
+                <td>Ranking position (1 = best).</td>
+              </tr>
+              <tr>
+                <td><code>osm_type</code></td>
+                <td>string</td>
+                <td>OpenStreetMap type.</td>
+              </tr>
+              <tr>
+                <td><code>osm_id</code></td>
+                <td>integer | string</td>
+                <td>OpenStreetMap ID.</td>
+              </tr>
+              <tr>
+                <td><code>display_name</code></td>
+                <td>string</td>
+                <td>Human-readable location name.</td>
+              </tr>
+              <tr>
+                <td><code>lat</code></td>
+                <td>float | string</td>
+                <td>Latitude coordinate.</td>
+              </tr>
+              <tr>
+                <td><code>lon</code></td>
+                <td>float | string</td>
+                <td>Longitude coordinate.</td>
+              </tr>
+              <tr>
+                <td><code>bbox</code></td>
+                <td>array</td>
+                <td>Bounding box coordinates.</td>
+              </tr>
+              <tr>
+                <td><code>country_code</code></td>
+                <td>string | null</td>
+                <td>ISO 3166-1 alpha-2 country code (uppercase).</td>
+              </tr>
+              <tr>
+                <td><code>category</code></td>
+                <td>string | null</td>
+                <td>OSM category (e.g., <code>boundary</code>, <code>place</code>).</td>
+              </tr>
+              <tr>
+                <td><code>place_rank</code></td>
+                <td>integer | null</td>
+                <td>Nominatim place rank.</td>
+              </tr>
+              <tr>
+                <td><code>importance</code></td>
+                <td>float | null</td>
+                <td>Importance score from Nominatim.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-        <div class="doc-card">
-          <h3>Result Item</h3>
-          <ul>
-            <li><strong>mention</strong>: Extracted place name.</li>
-            <li><strong>status</strong>: Resolution status.</li>
-            <li><strong>selected</strong>: Best candidate (OSM id, name, coordinates).</li>
-            <li><strong>candidates</strong>: Ranked alternatives.</li>
-          </ul>
+
+        <div class="docs-section">
+          <h3>Error Responses</h3>
+          <table class="params-table">
+            <thead>
+              <tr>
+                <th>Status Code</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>400</code></td>
+                <td>Bad Request - Input text exceeds 2000 characters (<code>input too long</code>).</td>
+              </tr>
+              <tr>
+                <td><code>500</code></td>
+                <td>Internal Server Error - Processing failed. Error details in response body.</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>

@@ -282,45 +282,133 @@ button:disabled {
 }
 
 .docs {
-  padding: 2rem;
+  padding: 3rem 2rem;
   background: #f7f9fb;
   border-top: 1px solid #e0e6ed;
 }
 
-.docs-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
+.docs-content {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.doc-card {
+.docs-section {
+  margin-bottom: 2.5rem;
+}
+
+.docs-section h3 {
+  font-size: 1.5rem;
+  color: #1a1a1a;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+}
+
+.docs-section h4 {
+  font-size: 1.1rem;
+  color: #2c3e50;
+  margin: 1.5rem 0 0.75rem 0;
+  font-weight: 600;
+}
+
+.docs-section > p {
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.endpoint-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
   background: white;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border-radius: 6px;
+  margin: 1rem 0;
 }
 
-.doc-card h3 {
-  margin: 0 0 0.5rem 0;
+.http-method {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: #10b981;
+  color: white;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.endpoint-path {
+  font-family: 'Courier New', monospace;
   font-size: 1rem;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.params-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  margin: 1rem 0;
+}
+
+.params-table thead {
+  background: #f5f7f9;
+}
+
+.params-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
   color: #2c3e50;
+  font-size: 0.9rem;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-.doc-card p {
-  margin: 0;
+.params-table td {
+  padding: 0.75rem 1rem;
   color: #555;
+  border-bottom: 1px solid #f0f0f0;
+  vertical-align: top;
 }
 
-.doc-card ul {
-  margin: 0;
-  padding-left: 1.1rem;
-  color: #555;
+.params-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
-.doc-card li {
-  margin: 0.25rem 0;
+.params-table code {
+  background: #f5f7f9;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e83e8c;
+}
+
+.badge-required {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: #fee;
+  color: #c62828;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.badge-optional {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: #e8f4f8;
+  color: #2980b9;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 3px;
+  text-transform: uppercase;
 }
 
 @media (max-width: 768px) {
