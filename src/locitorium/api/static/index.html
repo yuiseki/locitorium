@@ -180,12 +180,16 @@
             
             if (result.selected) {
               const sel = result.selected;
+              const bboxStr = sel.bbox ? `[${sel.bbox.join(', ')}]` : 'N/A';
               html += `
                 <div class="result-selected">
                   <div class="result-label">Selected Location:</div>
                   <div class="result-value"><strong>${sel.display_name}</strong></div>
                   <div class="result-value" style="margin-top: 0.5rem;">
                     <strong>Coordinates:</strong> ${sel.lat}, ${sel.lon}
+                  </div>
+                  <div class="result-value">
+                    <strong>BBox:</strong> ${bboxStr}
                   </div>
                   <div class="result-value">
                     <strong>OSM:</strong> ${sel.osm_type} / ${sel.osm_id}
