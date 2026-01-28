@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.venv/
+.uv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Runtime outputs
+runs/
+
+# Local temp (do not commit)
+tmp/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
