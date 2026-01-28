@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class AppConfig:
     ollama_base_url: str = "https://ollama.yuiseki.net"
     nominatim_base_url: str = "https://nominatim.yuiseki.net"
-    ollama_model: str = "lfm2.5-thinking:1.2b"
+    ollama_model: str = "granite4:3b"
     ollama_thinking: bool | None = None
     debug_dir: str | None = None
     max_chars: int = 2000

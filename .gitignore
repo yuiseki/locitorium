@@ -21,6 +21,7 @@ runs/
 
 # Local temp (do not commit)
 tmp/
+tmp/NewScopeDaily/
 
 # OS/editor
 .DS_Store
