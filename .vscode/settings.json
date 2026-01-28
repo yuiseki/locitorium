@@ -1,8 +1,20 @@
 {
     "cSpell.words": [
+        "addressdetails",
+        "boundingbox",
+        "geocoder",
+        "httpx",
+        "jsonv",
         "locitorium",
         "Matsumura",
         "Nominatim",
-        "Ollama"
+        "Ollama",
+        "pydantic",
+        "pyproject",
+        "pytest",
+        "qwen",
+        "reranker",
+        "topk",
+        "Typer"
     ]
 }
