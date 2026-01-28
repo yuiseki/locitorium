@@ -1,9 +1,11 @@
 {
     "cSpell.words": [
         "addressdetails",
+        "ASGI",
         "boundingbox",
         "deepseek",
         "geocoder",
+        "Hennepin",
         "httpx",
         "jsonv",
         "locitorium",
@@ -18,6 +20,7 @@
         "qwen",
         "reranker",
         "topk",
-        "Typer"
+        "Typer",
+        "uvicorn"
     ]
 }
