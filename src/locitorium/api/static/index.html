@@ -77,6 +77,16 @@
         font-weight: 600;
         color: #333;
       }
+
+      select {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: inherit;
+        background: white;
+        cursor: pointer;
+      }
       
       button { 
         margin-top: 1.5rem; 
@@ -89,6 +99,8 @@
         font-weight: 600;
         cursor: pointer;
         transition: background 0.2s;
+          display: block;
+          width: 100%;
       }
       
       button:hover:not(:disabled) {
@@ -263,7 +275,11 @@
           <textarea id="q" name="q" placeholder="Paste text here..."></textarea>
           
           <label for="model">Model (optional)</label>
-          <input id="model" name="model" placeholder="granite4:3b" />
+          <select id="model" name="model">
+            <option value="granite4:3b" selected>granite4:3b</option>
+            <option value="ministral-3:3b">ministral-3:3b</option>
+            <option value="granite3.3:2b">granite3.3:2b</option>
+          </select>
           
           <button type="submit" id="submitBtn">Resolve Locations</button>
         </form>
