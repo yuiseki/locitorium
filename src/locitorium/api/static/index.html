@@ -14,36 +14,86 @@
     
     <div class="container">
       <div class="left-panel">
-        <p style="margin-top: 0; color: #555;"><span style="font-size: 1.5rem;">📝</span> Enter text to resolve locations.</p>
-        <form id="resolveForm">
-          <label for="q">Text</label>
-          <textarea id="q" name="q" placeholder="Paste text here..."></textarea>
-          
-          <label for="model">Model (optional)</label>
-          <select id="model" name="model">
-            <option value="granite4:3b" selected>granite4:3b</option>
-            <option value="ministral-3:3b">ministral-3:3b</option>
-            <option value="granite3.3:2b">granite3.3:2b</option>
-          </select>
-          
-          <button type="submit" id="submitBtn">Resolve Locations</button>
-        </form>
+        <section class="section" id="playground">
+          <div class="section-title">
+            <span class="section-emoji">📝</span>
+            <h2>Playground</h2>
+          </div>
+          <p class="section-desc">Enter text to resolve locations.</p>
+          <form id="resolveForm">
+            <label for="q">Text</label>
+            <textarea id="q" name="q" placeholder="Paste text here..."></textarea>
+            
+            <label for="model">Model (optional)</label>
+            <select id="model" name="model">
+              <option value="granite4:3b" selected>granite4:3b</option>
+              <option value="ministral-3:3b">ministral-3:3b</option>
+              <option value="granite3.3:2b">granite3.3:2b</option>
+            </select>
+            
+            <button type="submit" id="submitBtn">Resolve Locations</button>
+          </form>
+        </section>
       </div>
       
       <div class="right-panel">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-state-icon">🗺️</div>
-          <h2>No results yet</h2>
-          <p>Enter text in the left panel and click "Resolve Locations" to get started.</p>
-        </div>
-        
-        <div class="spinner-container" id="spinnerContainer">
-          <div class="spinner"></div>
-        </div>
-        
-        <div id="results"></div>
+        <section class="section" id="resultsSection">
+          <div class="section-title">
+            <span class="section-emoji">🗺️</span>
+            <h2>Playground Results</h2>
+          </div>
+          <div class="empty-state" id="emptyState">
+            <div class="empty-state-icon">🗺️</div>
+            <h3>No results yet</h3>
+            <p>Enter text in the left panel and click "Resolve Locations" to get started.</p>
+          </div>
+          
+          <div class="spinner-container" id="spinnerContainer">
+            <div class="spinner"></div>
+          </div>
+          
+          <div id="results"></div>
+        </section>
       </div>
     </div>
+
+    <section class="section docs" id="docs">
+      <div class="section-title">
+        <span class="section-emoji">📚</span>
+        <h2>Docs</h2>
+      </div>
+      <p class="section-desc">Call the API to resolve location mentions without leaving this page.</p>
+      <div class="docs-grid">
+        <div class="doc-card">
+          <h3>Endpoint</h3>
+          <p><strong>GET</strong> /api</p>
+        </div>
+        <div class="doc-card">
+          <h3>Query Parameters</h3>
+          <ul>
+            <li><strong>q</strong> (required): Text to analyze.</li>
+            <li><strong>model</strong> (optional): Ollama model name.</li>
+          </ul>
+        </div>
+        <div class="doc-card">
+          <h3>Response Overview</h3>
+          <ul>
+            <li><strong>doc_id</strong>: Unique request ID.</li>
+            <li><strong>model_info</strong>: Model and service metadata.</li>
+            <li><strong>results</strong>: Resolved mentions list.</li>
+          </ul>
+        </div>
+        <div class="doc-card">
+          <h3>Result Item</h3>
+          <ul>
+            <li><strong>mention</strong>: Extracted place name.</li>
+            <li><strong>status</strong>: Resolution status.</li>
+            <li><strong>selected</strong>: Best candidate (OSM id, name, coordinates).</li>
+            <li><strong>candidates</strong>: Ranked alternatives.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
     
     <script>
       const form = document.getElementById('resolveForm');

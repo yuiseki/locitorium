@@ -20,6 +20,32 @@ header h1 {
   font-size: 1.5rem;
 }
 
+.section {
+  background: transparent;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.75rem 0;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2c3e50;
+}
+
+.section-emoji {
+  font-size: 1.4rem;
+}
+
+.section-desc {
+  margin: 0 0 1rem 0;
+  color: #555;
+}
+
 .container {
   display: flex;
   flex: 1;
@@ -40,6 +66,12 @@ header h1 {
   padding: 2rem;
   overflow-y: auto;
   background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-panel .section {
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
@@ -154,6 +186,13 @@ button:disabled {
   margin-bottom: 0.5rem;
 }
 
+.empty-state h3 {
+  color: #7f8c8d;
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
 .empty-state p {
   color: #95a5a6;
   font-size: 1rem;
@@ -239,6 +278,48 @@ button:disabled {
   border-radius: 8px;
   border-left: 4px solid #c62828;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.docs {
+  padding: 2rem;
+  background: #f7f9fb;
+  border-top: 1px solid #e0e6ed;
+}
+
+.docs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.doc-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.doc-card h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+.doc-card p {
+  margin: 0;
+  color: #555;
+}
+
+.doc-card ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #555;
+}
+
+.doc-card li {
+  margin: 0.25rem 0;
 }
 
 @media (max-width: 768px) {
