@@ -5,20 +5,403 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>locitorium</title>
     <style>
-      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; margin: 2rem; }
-      textarea { width: 100%; max-width: 900px; height: 160px; }
-      button { margin-top: 0.5rem; }
+      * { box-sizing: border-box; }
+      body { 
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; 
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      header {
+        padding: 1rem 2rem;
+        background: #2c3e50;
+        color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      
+      header h1 {
+        margin: 0;
+        font-size: 1.5rem;
+      }
+      
+      .container {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+      
+      .left-panel {
+        width: 40%;
+        min-width: 400px;
+        padding: 2rem;
+        overflow-y: auto;
+        border-right: 1px solid #ddd;
+        background: #f9f9f9;
+      }
+      
+      .right-panel {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+        background: white;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      textarea { 
+        width: 100%; 
+        height: 200px; 
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        resize: vertical;
+      }
+      
+      input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-family: inherit;
+      }
+      
+      label {
+        display: block;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #333;
+      }
+      
+      button { 
+        margin-top: 1.5rem; 
+        padding: 0.75rem 2rem;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      
+      button:hover:not(:disabled) {
+        background: #2980b9;
+      }
+      
+      button:disabled {
+        background: #95a5a6;
+        cursor: not-allowed;
+      }
+      
+      /* Loading Spinner */
+      .spinner-container {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        padding: 4rem 0;
+      }
+      
+      .spinner-container.active {
+        display: flex;
+      }
+      
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Empty State */
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        color: #95a5a6;
+        text-align: center;
+        padding: 2rem;
+      }
+      
+      .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+      }
+      
+      .empty-state h2 {
+        color: #7f8c8d;
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .empty-state p {
+        color: #95a5a6;
+        font-size: 1rem;
+      }
+      
+      /* Results */
+      #results {
+        display: none;
+      }
+      
+      #results.active {
+        display: block;
+      }
+      
+      .result-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+        background: #fafafa;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      
+      .result-header {
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+      }
+      
+      .result-status {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-left: 0.5rem;
+      }
+      
+      .status-resolved {
+        background: #d4edda;
+        color: #155724;
+      }
+      
+      .result-selected {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        background: white;
+        border-radius: 4px;
+        border-left: 3px solid #3498db;
+      }
+      
+      .result-label {
+        font-weight: 600;
+        color: #555;
+        font-size: 0.9rem;
+      }
+      
+      .result-value {
+        color: #333;
+        margin-top: 0.25rem;
+      }
+      
+      .model-info {
+        background: #e3f2fd;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      
+      .model-info-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+      }
+      
+      .error {
+        background: #ffebee;
+        color: #c62828;
+        padding: 1.25rem;
+        border-radius: 8px;
+        border-left: 4px solid #c62828;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      }
+      
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+        .left-panel {
+          width: 100%;
+          min-width: unset;
+          border-right: none;
+          border-bottom: 1px solid #ddd;
+        }
+      }
     </style>
   </head>
   <body>
-    <h1>locitorium</h1>
-    <p>Enter text to resolve locations.</p>
-    <form action="/api" method="get">
-      <label for="q">Text</label><br />
-      <textarea id="q" name="q" placeholder="Paste text here"></textarea><br />
-      <label for="model">Model (optional)</label><br />
-      <input id="model" name="model" placeholder="granite4:3b" /><br />
-      <button type="submit">Resolve</button>
-    </form>
+    <header>
+      <h1>locitorium</h1>
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Text-to-Geospatial service that using Ollama for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations.</p>
+    </header>
+    
+    <div class="container">
+      <div class="left-panel">
+        <p style="margin-top: 0; color: #555;">Enter text to resolve locations.</p>
+        <form id="resolveForm">
+          <label for="q">Text</label>
+          <textarea id="q" name="q" placeholder="Paste text here..."></textarea>
+          
+          <label for="model">Model (optional)</label>
+          <input id="model" name="model" placeholder="granite4:3b" />
+          
+          <button type="submit" id="submitBtn">Resolve Locations</button>
+        </form>
+      </div>
+      
+      <div class="right-panel">
+        <div class="empty-state" id="emptyState">
+          <div class="empty-state-icon">🗺️</div>
+          <h2>No results yet</h2>
+          <p>Enter text in the left panel and click "Resolve Locations" to get started.</p>
+        </div>
+        
+        <div class="spinner-container" id="spinnerContainer">
+          <div class="spinner"></div>
+        </div>
+        
+        <div id="results"></div>
+      </div>
+    </div>
+    
+    <script>
+      const form = document.getElementById('resolveForm');
+      const spinnerContainer = document.getElementById('spinnerContainer');
+      const resultsDiv = document.getElementById('results');
+      const emptyState = document.getElementById('emptyState');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const q = document.getElementById('q').value.trim();
+        const model = document.getElementById('model').value.trim();
+        
+        if (!q) {
+          alert('Please enter text to resolve');
+          return;
+        }
+        
+        // Show spinner, hide empty state and results, disable button
+        emptyState.style.display = 'none';
+        resultsDiv.classList.remove('active');
+        resultsDiv.innerHTML = '';
+        spinnerContainer.classList.add('active');
+        submitBtn.disabled = true;
+        
+        try {
+          const params = new URLSearchParams({ q });
+          if (model) params.append('model', model);
+          
+          const response = await fetch(`/api?${params.toString()}`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          displayResults(data);
+          
+        } catch (error) {
+          resultsDiv.innerHTML = `
+            <div class="error">
+              <strong>Error:</strong> ${error.message}
+            </div>
+          `;
+          resultsDiv.classList.add('active');
+        } finally {
+          spinnerContainer.classList.remove('active');
+          submitBtn.disabled = false;
+        }
+      });
+      
+      function displayResults(data) {
+        let html = '';
+        
+        // Model Info
+        if (data.model_info) {
+          html += `
+            <div class="model-info">
+              <div class="model-info-title">Model Information</div>
+              <div><strong>Model:</strong> ${data.model_info.ollama_model || 'N/A'}</div>
+              <div><strong>Nominatim URL:</strong> ${data.model_info.nominatim_base_url || 'N/A'}</div>
+              <div><strong>Config Hash:</strong> ${data.model_info.config_hash || 'N/A'}</div>
+              <div><strong>Document ID:</strong> ${data.doc_id || 'N/A'}</div>
+            </div>
+          `;
+        }
+        
+        // Results
+        if (data.results && data.results.length > 0) {
+          html += `<h2>Resolved Locations (${data.results.length})</h2>`;
+          
+          data.results.forEach(result => {
+            const statusClass = result.status === 'resolved' ? 'status-resolved' : '';
+            
+            html += `
+              <div class="result-card">
+                <div class="result-header">
+                  "${result.mention}"
+                  <span class="result-status ${statusClass}">${result.status}</span>
+                </div>
+            `;
+            
+            if (result.selected) {
+              const sel = result.selected;
+              html += `
+                <div class="result-selected">
+                  <div class="result-label">Selected Location:</div>
+                  <div class="result-value"><strong>${sel.display_name}</strong></div>
+                  <div class="result-value" style="margin-top: 0.5rem;">
+                    <strong>Coordinates:</strong> ${sel.lat}, ${sel.lon}
+                  </div>
+                  <div class="result-value">
+                    <strong>OSM:</strong> ${sel.osm_type} / ${sel.osm_id}
+                  </div>
+                  <div class="result-value">
+                    <strong>Country:</strong> ${sel.country_code || 'N/A'}
+                  </div>
+                </div>
+              `;
+            }
+            
+            if (result.candidates && result.candidates.length > 1) {
+              html += `
+                <div style="margin-top: 0.75rem; font-size: 0.9rem; color: #666;">
+                  <strong>Other candidates:</strong> ${result.candidates.length - 1}
+                </div>
+              `;
+            }
+            
+            html += `</div>`;
+          });
+        } else {
+          html += `<div class="result-card">No locations found.</div>`;
+        }
+        
+        resultsDiv.innerHTML = html;
+        resultsDiv.classList.add('active');
+      }
+    </script>
   </body>
 </html>

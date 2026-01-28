@@ -1,5 +1,7 @@
 # locitorium
 
+Text-to-Geospatial service that using Ollama for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations.
+
 Phase 0 focuses on grounded country-level toponym resolution using a minimal, measurable pipeline.
 
 ## Quickstart (Phase 0)
