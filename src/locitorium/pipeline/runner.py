@@ -84,6 +84,7 @@ async def run_doc(text: str, doc_id: str, config: AppConfig) -> PredDoc:
         doc_id=doc_id,
         model_info=ModelInfo(
             ollama_model=config.ollama_model,
+            ollama_base_url=config.ollama_base_url,
             nominatim_base_url=config.nominatim_base_url,
             config_hash=_config_hash(config),
         ),
