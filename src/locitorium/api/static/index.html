@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>locitorium</title>
     <link rel="stylesheet" href="/static/index.css" />
+    <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.js"></script>
   </head>
   <body>
     <header>
@@ -50,6 +52,10 @@
           
           <div class="spinner-container" id="spinnerContainer">
             <div class="spinner"></div>
+          </div>
+          
+          <div id="mapContainer" style="display: none;">
+            <div id="map"></div>
           </div>
           
           <div id="results"></div>
@@ -357,6 +363,9 @@
       const resultsDiv = document.getElementById('results');
       const emptyState = document.getElementById('emptyState');
       const submitBtn = document.getElementById('submitBtn');
+      const mapContainer = document.getElementById('mapContainer');
+      
+      let map = null;
       
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -373,6 +382,7 @@
         emptyState.style.display = 'none';
         resultsDiv.classList.remove('active');
         resultsDiv.innerHTML = '';
+        mapContainer.style.display = 'none';
         spinnerContainer.classList.add('active');
         submitBtn.disabled = true;
         
@@ -473,6 +483,220 @@
         
         resultsDiv.innerHTML = html;
         resultsDiv.classList.add('active');
+        
+        // Initialize map and add markers
+        initializeMap(data);
+      }
+      
+      function initializeMap(data) {
+        // Collect all resolved locations with bbox
+        const locations = [];
+        if (data.results) {
+          data.results.forEach(result => {
+            if (result.status === 'resolved' && result.selected) {
+              const sel = result.selected;
+              if (sel.bbox && sel.bbox.length === 4) {
+                const [minLat, maxLat, minLon, maxLon] = sel.bbox.map(v => parseFloat(v));
+                
+                // Calculate center coordinates
+                // For bboxes that cross the dateline (lon span = 360), use the center point
+                const lonSpan = maxLon - minLon;
+                const centerLon = lonSpan === 360 ? parseFloat(sel.lon) : (minLon + maxLon) / 2;
+                const centerLat = (minLat + maxLat) / 2;
+                
+                // Skip if bbox spans more than 90 degrees in latitude (likely data error)
+                const latSpan = maxLat - minLat;
+                if (latSpan > 90) {
+                  console.warn(`Skipping invalid bbox (lat span > 90) for ${result.mention}:`, sel.bbox);
+                  return;
+                }
+                
+                // For dateline-crossing bboxes (lonSpan = 360), only show label, no bbox polygon
+                const showPolygon = lonSpan < 360;
+                
+                locations.push({
+                  bbox: [minLon, minLat, maxLon, maxLat], // [west, south, east, north]
+                  center: [centerLon, centerLat],
+                  name: sel.display_name,
+                  mention: result.mention,
+                  id: result.mention_id,
+                  showPolygon: showPolygon
+                });
+              }
+            }
+          });
+        }
+        
+        if (locations.length === 0) {
+          mapContainer.style.display = 'none';
+          return;
+        }
+        
+        // Show map container
+        mapContainer.style.display = 'block';
+        
+        // Initialize map if not already created
+        if (!map) {
+          map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://tile.openstreetmap.jp/styles/osm-bright/style.json',
+            center: locations[0].center,
+            zoom: 5,
+            attributionControl: true
+          });
+          
+          // Add attribution
+          map.addControl(new maplibregl.AttributionControl({
+            compact: false
+          }));
+        }
+        
+        // Wait for map to load before adding layers
+        map.once('load', () => {
+          // Remove existing layers and sources if they exist
+          if (map.getLayer('bbox-layer')) map.removeLayer('bbox-layer');
+          if (map.getLayer('bbox-outline')) map.removeLayer('bbox-outline');
+          if (map.getLayer('bbox-labels')) map.removeLayer('bbox-labels');
+          if (map.getSource('bboxes')) map.removeSource('bboxes');
+          
+          // Create GeoJSON features for bboxes (only for locations that should show polygon)
+          const features = locations
+            .filter(loc => loc.showPolygon)
+            .map(loc => {
+              const [minLon, minLat, maxLon, maxLat] = loc.bbox;
+              return {
+                type: 'Feature',
+                properties: {
+                  name: loc.name,
+                  mention: loc.mention,
+                  id: loc.id
+                },
+                geometry: {
+                  type: 'Polygon',
+                  coordinates: [[
+                    [minLon, minLat],
+                    [maxLon, minLat],
+                    [maxLon, maxLat],
+                    [minLon, maxLat],
+                    [minLon, minLat]
+                  ]]
+                }
+              };
+            });
+          
+          // Create GeoJSON features for labels
+          const labelFeatures = locations.map(loc => ({
+            type: 'Feature',
+            properties: {
+              name: loc.name,
+              mention: loc.mention
+            },
+            geometry: {
+              type: 'Point',
+              coordinates: loc.center
+            }
+          }));
+          
+          // Add source
+          map.addSource('bboxes', {
+            type: 'geojson',
+            data: {
+              type: 'FeatureCollection',
+              features: [...features, ...labelFeatures]
+            }
+          });
+          
+          // Add bbox fill layer
+          map.addLayer({
+            id: 'bbox-layer',
+            type: 'fill',
+            source: 'bboxes',
+            filter: ['==', ['geometry-type'], 'Polygon'],
+            paint: {
+              'fill-color': '#3498db',
+              'fill-opacity': 0.2
+            }
+          });
+          
+          // Add bbox outline layer
+          map.addLayer({
+            id: 'bbox-outline',
+            type: 'line',
+            source: 'bboxes',
+            filter: ['==', ['geometry-type'], 'Polygon'],
+            paint: {
+              'line-color': '#2980b9',
+              'line-width': 2
+            }
+          });
+          
+          // Add label layer
+          map.addLayer({
+            id: 'bbox-labels',
+            type: 'symbol',
+            source: 'bboxes',
+            filter: ['==', ['geometry-type'], 'Point'],
+            layout: {
+              'text-field': ['get', 'mention'],
+              'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+              'text-size': 16,
+              'text-anchor': 'center',
+              'text-offset': [0, 0]
+            },
+            paint: {
+              'text-color': '#ffffff',
+              'text-halo-color': '#2980b9',
+              'text-halo-width': 3,
+              'text-halo-blur': 1
+            }
+          });
+          
+          // Add click handler for bbox
+          map.on('click', 'bbox-layer', (e) => {
+            if (e.features && e.features.length > 0) {
+              const feature = e.features[0];
+              new maplibregl.Popup()
+                .setLngLat(e.lngLat)
+                .setHTML(`
+                  <div style="font-family: sans-serif;">
+                    <strong>${feature.properties.mention}</strong><br/>
+                    ${feature.properties.name}
+                  </div>
+                `)
+                .addTo(map);
+            }
+          });
+          
+          // Change cursor on hover
+          map.on('mouseenter', 'bbox-layer', () => {
+            map.getCanvas().style.cursor = 'pointer';
+          });
+          
+          map.on('mouseleave', 'bbox-layer', () => {
+            map.getCanvas().style.cursor = '';
+          });
+          
+          // Fit map to all locations
+          const bounds = new maplibregl.LngLatBounds();
+          locations.forEach(loc => {
+            if (loc.showPolygon) {
+              // For normal bboxes, include the entire bbox
+              const [minLon, minLat, maxLon, maxLat] = loc.bbox;
+              bounds.extend([minLon, minLat]);
+              bounds.extend([maxLon, maxLat]);
+            } else {
+              // For dateline-crossing locations, just include the center point
+              bounds.extend(loc.center);
+            }
+          });
+          
+          map.fitBounds(bounds, { padding: 50, maxZoom: 12 });
+        });
+        
+        // If map already loaded, trigger immediately
+        if (map.loaded()) {
+          map.fire('load');
+        }
       }
     </script>
   </body>
