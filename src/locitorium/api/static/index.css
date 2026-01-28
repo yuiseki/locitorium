@@ -51,6 +51,7 @@ header h1 {
   flex: none;
   overflow: hidden;
   height: calc(90vh - 5rem);
+  max-height: 800px;
 }
 
 .left-panel {
