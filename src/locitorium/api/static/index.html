@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>locitorium</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; margin: 2rem; }
+      textarea { width: 100%; max-width: 900px; height: 160px; }
+      button { margin-top: 0.5rem; }
+    </style>
+  </head>
+  <body>
+    <h1>locitorium</h1>
+    <p>Enter text to resolve locations.</p>
+    <form action="/api" method="get">
+      <label for="q">Text</label><br />
+      <textarea id="q" name="q" placeholder="Paste text here"></textarea><br />
+      <label for="model">Model (optional)</label><br />
+      <input id="model" name="model" placeholder="granite4:3b" /><br />
+      <button type="submit">Resolve</button>
+    </form>
+  </body>
+</html>
