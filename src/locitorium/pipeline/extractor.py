@@ -16,6 +16,15 @@ def _dedupe_mentions(items: list[str]) -> list[str]:
     return output
 
 
+def _filter_mentions(text: str, mentions: list[str]) -> list[str]:
+    text_fold = text.casefold()
+    filtered: list[str] = []
+    for mention in mentions:
+        if mention in text or mention.casefold() in text_fold:
+            filtered.append(mention)
+    return filtered
+
+
 async def extract_mentions(
     client: OllamaClient, text: str, max_mentions: int, tag: str
 ) -> list[str]:
@@ -24,4 +33,5 @@ async def extract_mentions(
     data = await client.generate(prompt=prompt, schema=schema, tag=tag)
     parsed = ExtractOutput.model_validate(data)
     mentions = _dedupe_mentions([m.mention for m in parsed.mentions])
+    mentions = _filter_mentions(text, mentions)
     return mentions[:max_mentions]
