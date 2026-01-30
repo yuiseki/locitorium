@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: locitorium
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: locitorium
+  template:
+    metadata:
+      labels:
+        app: locitorium
+    spec:
+      containers:
+        - name: locitorium
+          image: locitorium-locitorium:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8010
+              hostPort: 8010
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: locitorium
+spec:
+  selector:
+    app: locitorium
+  ports:
+    - name: http
+      port: 8010
+      targetPort: 8010
+  type: ClusterIP
