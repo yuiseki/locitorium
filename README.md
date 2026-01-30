@@ -31,7 +31,7 @@ Then open http://localhost:8010 in your browser to access the playground.
 curl "http://localhost:8010/api?q=Trump+says+government+will+de-escalate+in+Minnesota"
 
 # Specify model
-curl "http://localhost:8010/api?q=Meeting+in+Tokyo&model=granite4:3b"
+curl "http://localhost:8010/api?q=Meeting+in+Tokyo&model=granite3.3:2b"
 ```
 
 See the interactive API documentation at http://localhost:8010#docs
@@ -42,7 +42,7 @@ Process a dataset:
 
 ```bash
 uv sync
-uv run locitorium run data/phase0/dataset.jsonl runs/dev/predictions.jsonl --model granite4:3b
+uv run locitorium run data/phase0/dataset.jsonl runs/dev/predictions.jsonl --model granite3.3:2b
 uv run locitorium eval data/phase0/dataset.jsonl runs/dev/predictions.jsonl
 ```
 
@@ -50,7 +50,8 @@ Benchmark multiple models:
 
 ```bash
 uv run locitorium bench data/phase0/dataset.jsonl runs/bench \
-  --models granite4:3b --models ministral-3:3b --models granite3.3:2b
+  --models granite4:3b --models ministral-3:3b --models granite3.3:2b \
+  --models granite3.2:8b --models granite4:1b-h
 ```
 
 ## Configuration
@@ -60,7 +61,9 @@ Default settings (configurable via `AppConfig` in `src/locitorium/config.py`):
 - **Language**: English
 - **Ollama**: https://ollama.yuiseki.net
 - **Nominatim**: https://nominatim.yuiseki.net
-- **Models** (tested): granite4:3b, ministral-3:3b, granite3.3:2b
+- **Models** (tested):
+  - granite4:3b, ministral-3:3b, granite3.3:2b
+  - granite3.2:8b, granite4:1b-h
 - **Limits**: 2000 chars input, 20 mentions max, 10 candidates per mention
 
 ## Data Format

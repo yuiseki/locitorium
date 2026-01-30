@@ -41,9 +41,11 @@
             
             <label for="model">Model (optional)</label>
             <select id="model" name="model">
-              <option value="granite4:3b" selected>granite4:3b</option>
+              <option value="granite3.3:2b" selected>granite3.3:2b</option>
+              <option value="granite4:1b-h">granite4:1b-h</option>
+              <option value="granite3.2:8b">granite3.2:8b</option>
+              <option value="granite4:3b">granite4:3b</option>
               <option value="ministral-3:3b">ministral-3:3b</option>
-              <option value="granite3.3:2b">granite3.3:2b</option>
             </select>
             
             <button type="submit" id="submitBtn">Resolve Locations</button>
@@ -115,7 +117,7 @@
                 <td><code>model</code></td>
                 <td>string</td>
                 <td><span class="badge-optional">Optional</span></td>
-                <td>Ollama model name (e.g., <code>granite4:3b</code>, <code>ministral-3:3b</code>). Defaults to <code>granite4:3b</code>.</td>
+                <td>Ollama model name (e.g., <code>granite3.3:2b</code>, <code>granite4:3b</code>). Defaults to <code>granite3.3:2b</code>.</td>
               </tr>
             </tbody>
           </table>
