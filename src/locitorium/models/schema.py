@@ -87,7 +87,15 @@ class ModelInfo(BaseModel):
     config_hash: str
 
 
+class PredMetrics(BaseModel):
+    total_s: float
+    extract_s: float | None = None
+    candidate_s: float | None = None
+    resolve_s: float | None = None
+
+
 class PredDoc(BaseModel):
     doc_id: str
     model_info: ModelInfo
     results: list[PredResult]
+    metrics: PredMetrics | None = None
