@@ -21,6 +21,7 @@
         "pytest",
         "qwen",
         "reranker",
+        "startswith",
         "topk",
         "Typer",
         "usermod",
