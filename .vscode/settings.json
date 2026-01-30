@@ -5,6 +5,7 @@
         "boundingbox",
         "deepseek",
         "geocoder",
+        "getent",
         "Hennepin",
         "httpx",
         "jsonv",
@@ -12,6 +13,7 @@
         "Matsumura",
         "ministral",
         "nemotron",
+        "newgrp",
         "Nominatim",
         "Ollama",
         "pydantic",
@@ -21,6 +23,7 @@
         "reranker",
         "topk",
         "Typer",
+        "usermod",
         "uvicorn"
     ]
 }

@@ -28,3 +28,29 @@ kubectl get svc locitorium
 ```bash
 curl -I http://127.0.0.1:8010/
 ```
+## containerd にローカルイメージを取り込む（sudo不要化）
+
+`docker save | ctr images import` を sudo 無しで実行するために、containerd の gRPC ソケットを `containerd` グループに割り当てる。
+
+```bash
+# containerd グループを作成（なければ）
+sudo groupadd containerd
+
+# ユーザーを containerd グループに追加
+sudo usermod -aG containerd $USER
+
+# containerd の gRPC ソケットのグループを変更
+sudo sed -i 's/^  gid = 0$/  gid = 1002/' /etc/containerd/config.toml
+sudo systemctl restart containerd
+
+# 反映確認（root:containerd になっていればOK）
+ls -l /run/containerd/containerd.sock
+
+# グループ反映（再ログインの代替）
+newgrp containerd
+
+# イメージの取り込み
+ docker save locitorium-locitorium:latest | ctr -n k8s.io images import -
+```
+
+※ `gid` は `getent group containerd` の値に合わせてください。
