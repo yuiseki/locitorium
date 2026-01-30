@@ -26,7 +26,7 @@ kubectl get svc locitorium
 
 ## ローカル疎通確認
 ```bash
-curl -I http://127.0.0.1:8010/
+curl -I http://127.0.0.1:30101/
 ```
 ## containerd にローカルイメージを取り込む（sudo不要化）
 
