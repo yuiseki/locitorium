@@ -1,4 +1,4 @@
-# Product Requirements Document (PRD): locitorium
+# Product Requirements Document (PRD): Locitorium
 
 Version: 0.1.0 (Draft)
 Status: In Progress

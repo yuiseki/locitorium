@@ -1,4 +1,4 @@
-# locitorium
+# Locitorium
 
 Text-to-Geospatial service that using Ollama for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations.
 
