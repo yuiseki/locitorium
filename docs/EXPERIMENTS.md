@@ -132,3 +132,21 @@ done
 - 10件のみなので統計的には弱い。後続で 100件版・全件版を実施する。
 - Nominatim の応答速度に左右されるため、同一環境で連続実行する。
 - JSON Schema 出力に失敗したモデルは `invalid_output` として記録。
+
+## Results (2026-01-30)
+
+Run: `runs/phase0_10b_top10_20260130`  
+Ranking criteria: `top1` desc, `avg_total_s` asc, docs=10 only.
+
+| rank | model | top1 | top5 | avg_total_s |
+| --- | --- | --- | --- | --- |
+| 1 | granite3.2:8b | 1.000 | 0.900 | 3.770 |
+| 2 | granite3.3:2b | 0.900 | 0.900 | 2.026 |
+| 3 | granite4:1b-h | 0.900 | 0.800 | 2.120 |
+| 4 | mistral:7b | 0.900 | 1.000 | 3.156 |
+| 5 | ministral-3:8b | 0.900 | 0.900 | 5.456 |
+| 6 | qwen3:1.7b | 0.900 | 0.900 | 15.001 |
+| 7 | deepseek-r1:8b | 0.900 | 0.900 | 27.257 |
+| 8 | qwen2.5vl:3b | 0.800 | 0.700 | 2.598 |
+| 9 | granite3.2:2b | 0.800 | 0.800 | 2.676 |
+| 10 | qwen2.5-coder:7b | 0.800 | 0.800 | 3.621 |
