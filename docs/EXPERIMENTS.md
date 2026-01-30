@@ -17,6 +17,21 @@
 - 予測は `runs/` 配下に保存し、再現性のため `runs/{run_id}` を固定する。
 - Pythonの一括実行はタイムアウトしやすいため、モデルごとに手動実行する。
 
+### Environment (Record)
+- Date: 2026-01-30
+- Repo: `https://github.com/yuiseki/locitorium`
+- Run ID: `runs/phase0_10b_top10_20260130`
+- Ollama Base URL: `src/locitorium/config.py` の既定値
+- Nominatim Base URL: `src/locitorium/config.py` の既定値
+- CLI: `uv run locitorium ...`
+
+### Reproducibility Checklist
+- [x] `uv sync` で依存関係を揃える
+- [x] `tmp/phase0_10.jsonl` を生成（入力固定）
+- [x] `runs/{run_id}/models.txt` を保存（モデル固定）
+- [x] 全モデルを順番に実行し `predictions_*.jsonl` を保存
+- [x] `scripts/aggregate_bench.py` で集計（結果固定）
+
 ### Preparation
 1) 10件サブセットを作成
 ```bash
@@ -89,7 +104,7 @@ PY
 # 例:
 model=$(head -n 1 "$run_id/models.txt")
 /usr/bin/time -p \
-  python3 -m locitorium.cli run \
+  uv run locitorium run \
   tmp/phase0_10.jsonl \
   "$run_id/predictions_$(echo "$model" | tr '/:' '__').jsonl" \
   --model "$model"
@@ -102,13 +117,22 @@ model=$(head -n 1 "$run_id/models.txt")
 # 予測ファイルごとにスコア算出
 for f in "$run_id"/predictions_*.jsonl; do
   echo "=== $f ==="
-  python3 -m locitorium.cli eval tmp/phase0_10.jsonl "$f" --k 5
+  uv run locitorium eval tmp/phase0_10.jsonl "$f" --k 5
 done
 ```
 
 3) 速度指標の算出（例: wall time / 10件）
 - `/usr/bin/time -p` の `real` を採用。
 - `avg_sec_per_doc = real / 10`。
+
+4) 集計（Top-1/Top-5 + metrics平均）
+```bash
+uv run python scripts/aggregate_bench.py \
+  --gold tmp/phase0_10.jsonl \
+  --preds-dir "$run_id" \
+  --models "$run_id/models.txt" \
+  --k 5
+```
 
 ### Ranking Method
 - Accuracy: `top1` を主指標（補助として `topk`）。
@@ -136,7 +160,18 @@ done
 ## Results (2026-01-30)
 
 Run: `runs/phase0_10b_top10_20260130`  
-Ranking criteria: `top1` desc, `avg_total_s` asc, docs=10 only.
+Ranking criteria: `top1` desc, `avg_total_s` asc, docs=10 only.  
+Aggregation command:
+```bash
+uv run python scripts/aggregate_bench.py \
+  --gold tmp/phase0_10.jsonl \
+  --preds-dir runs/phase0_10b_top10_20260130 \
+  --models runs/phase0_10b_top10_20260130/models.txt \
+  --k 5
+```
+Notes:
+- docs!=10 のモデルは集計から除外（途中失敗/タイムアウトの可能性）。
+- gemma / embed 系はモデル抽出時点で除外。
 
 | rank | model | top1 | top5 | avg_total_s |
 | --- | --- | --- | --- | --- |
