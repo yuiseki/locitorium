@@ -81,8 +81,8 @@ class PredResult(BaseModel):
 
 
 class ModelInfo(BaseModel):
-    ollama_model: str
-    ollama_base_url: str
+    llm_model: str
+    llm_base_url: str
     nominatim_base_url: str
     config_hash: str
 

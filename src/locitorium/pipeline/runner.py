@@ -9,7 +9,7 @@ from typing import Any
 from locitorium.clients.nominatim import NominatimClient, NominatimServerError
 from pathlib import Path
 
-from locitorium.clients.ollama import OllamaClient
+from locitorium.clients.llm import LlmClient
 from locitorium.config import AppConfig
 from locitorium.models.schema import ModelInfo, PredDoc, PredMetrics, PredResult
 from locitorium.pipeline.candidates import generate_candidates
@@ -43,10 +43,11 @@ async def run_doc(text: str, doc_id: str, config: AppConfig) -> PredDoc:
         raise ValueError("input too long")
 
     debug_dir = Path(config.debug_dir) if config.debug_dir else None
-    ollama = OllamaClient(
-        config.ollama_base_url,
-        config.ollama_model,
-        thinking=config.ollama_thinking,
+    ollama = LlmClient(
+        config.openai_base_url,
+        config.openai_model,
+        api_key=config.openai_api_key,
+        thinking=config.openai_thinking,
         debug_dir=debug_dir,
     )
     nominatim = NominatimClient(
@@ -100,8 +101,8 @@ async def run_doc(text: str, doc_id: str, config: AppConfig) -> PredDoc:
     return PredDoc(
         doc_id=doc_id,
         model_info=ModelInfo(
-            ollama_model=config.ollama_model,
-            ollama_base_url=config.ollama_base_url,
+            llm_model=config.openai_model,
+            llm_base_url=config.openai_base_url,
             nominatim_base_url=config.nominatim_base_url,
             config_hash=_config_hash(config),
         ),

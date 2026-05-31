@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from locitorium.clients.ollama import OllamaClient
+from locitorium.clients.llm import LlmClient
 from locitorium.prompts.extract import ExtractOutput, build_prompt
 
 
@@ -26,7 +26,7 @@ def _filter_mentions(text: str, mentions: list[str]) -> list[str]:
 
 
 async def extract_mentions(
-    client: OllamaClient, text: str, max_mentions: int, tag: str
+    client: LlmClient, text: str, max_mentions: int, tag: str
 ) -> list[str]:
     prompt = build_prompt(text)
     schema = ExtractOutput.model_json_schema()

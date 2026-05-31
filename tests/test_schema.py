@@ -23,8 +23,8 @@ def test_pred_schema_parses_and_allows_null_country_code():
         {
             "doc_id": "d1",
             "model_info": {
-                "ollama_model": "m",
-                "ollama_base_url": "https://ollama.example.com",
+                "llm_model": "m",
+                "llm_base_url": "http://10.108.45.102:8080/v1",
                 "nominatim_base_url": "https://example.com",
                 "config_hash": "abc",
             },

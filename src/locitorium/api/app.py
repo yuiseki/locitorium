@@ -8,7 +8,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from locitorium.clients.nominatim import NominatimClient
-from locitorium.config import AppConfig
+from locitorium.config import config_from_env
 from locitorium.pipeline.runner import run_doc
 
 app = FastAPI(title="locitorium", version="0.1.0")
@@ -16,7 +16,7 @@ app = FastAPI(title="locitorium", version="0.1.0")
 
 @app.on_event("startup")
 async def startup_check() -> None:
-    config = AppConfig()
+    config = config_from_env()
     client = NominatimClient(
         config.nominatim_base_url,
         timeout_s=config.nominatim_timeout_s,
@@ -39,9 +39,9 @@ async def resolve(
     q: str = Query(..., min_length=1),
     model: str | None = Query(None),
 ):
-    config = AppConfig()
+    config = config_from_env()
     if model:
-        config = AppConfig(ollama_model=model)
+        config = config_from_env(openai_model=model)
 
     if len(q) > config.max_chars:
         raise HTTPException(status_code=400, detail="input too long")

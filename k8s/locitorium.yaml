@@ -21,6 +21,12 @@ spec:
           env:
             - name: PYTHONUNBUFFERED
               value: "1"
+            - name: OPENAI_BASE_URL
+              value: "http://llama-server.knative-pool.svc.cluster.local:8080/v1"
+            - name: OPENAI_API_KEY
+              value: "dummy"
+            - name: OPENAI_MODEL
+              value: "gvt-llm"
 ---
 apiVersion: v1
 kind: Service

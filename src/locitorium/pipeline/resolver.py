@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from locitorium.clients.ollama import OllamaClient
+from locitorium.clients.llm import LlmClient
 from locitorium.models.schema import Candidate, PredResult, SelectedCandidate
 from locitorium.prompts.resolve import ResolveOutput, build_prompt
 
@@ -48,7 +48,7 @@ def _default_results(
 
 
 async def resolve_candidates(
-    client: OllamaClient,
+    client: LlmClient,
     text: str,
     candidates_by_id: dict[str, tuple[str, list[Candidate]]],
     tag: str,
