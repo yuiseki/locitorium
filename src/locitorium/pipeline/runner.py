@@ -43,7 +43,7 @@ async def run_doc(text: str, doc_id: str, config: AppConfig) -> PredDoc:
         raise ValueError("input too long")
 
     debug_dir = Path(config.debug_dir) if config.debug_dir else None
-    ollama = LlmClient(
+    llm = LlmClient(
         config.openai_base_url,
         config.openai_model,
         api_key=config.openai_api_key,
@@ -64,7 +64,7 @@ async def run_doc(text: str, doc_id: str, config: AppConfig) -> PredDoc:
         nonlocal extract_s, candidate_s, resolve_s
         t0 = time.perf_counter()
         mentions = await extract_mentions(
-            ollama, text, config.max_mentions, tag=f"{doc_id}_extract"
+            llm, text, config.max_mentions, tag=f"{doc_id}_extract"
         )
         extract_s = time.perf_counter() - t0
         mention_pairs = _mention_ids(doc_id, mentions)
@@ -82,7 +82,7 @@ async def run_doc(text: str, doc_id: str, config: AppConfig) -> PredDoc:
         candidate_s = time.perf_counter() - t1
         t2 = time.perf_counter()
         results = await resolve_candidates(
-            ollama, text, candidates, tag=f"{doc_id}_resolve"
+            llm, text, candidates, tag=f"{doc_id}_resolve"
         )
         resolve_s = time.perf_counter() - t2
         return results

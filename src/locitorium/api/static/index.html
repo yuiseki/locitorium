@@ -4,18 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Locitorium</title>
-    <meta name="description" content="Text-to-Geospatial service that using Ollama for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations." />
+    <meta name="description" content="Text-to-Geospatial service that using llama-server for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations." />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Locitorium" />
-    <meta property="og:description" content="Text-to-Geospatial service that using Ollama for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations." />
+    <meta property="og:description" content="Text-to-Geospatial service that using llama-server for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations." />
     <meta property="og:site_name" content="Locitorium" />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:title" content="Locitorium" />
-    <meta name="twitter:description" content="Text-to-Geospatial service that using Ollama for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations." />
+    <meta name="twitter:description" content="Text-to-Geospatial service that using llama-server for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations." />
     
     <link rel="stylesheet" href="/static/index.css" />
     <link href="https://unpkg.com/maplibre-gl@latest/dist/maplibre-gl.css" rel="stylesheet" />
@@ -24,7 +24,7 @@
   <body>
     <header>
       <h1>Locitorium</h1>
-      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Text-to-Geospatial service that using Ollama for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations.</p>
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Text-to-Geospatial service that using llama-server for semantic extracting and Nominatim (OpenStreetMap) for grounding to eliminate hallucinations.</p>
     </header>
     
     <div class="container">
@@ -117,7 +117,7 @@
                 <td><code>model</code></td>
                 <td>string</td>
                 <td><span class="badge-optional">Optional</span></td>
-                <td>Ollama model name (e.g., <code>granite3.3:2b</code>, <code>granite4:3b</code>). Defaults to <code>granite3.3:2b</code>.</td>
+                <td>LLM model name override (e.g., <code>gvt-llm</code>). Defaults to the server-configured model.</td>
               </tr>
             </tbody>
           </table>
@@ -166,14 +166,14 @@
             </thead>
             <tbody>
               <tr>
-                <td><code>ollama_model</code></td>
+                <td><code>llm_model</code></td>
                 <td>string</td>
-                <td>Name of the Ollama model used for extraction.</td>
+                <td>Name of the LLM model used for extraction.</td>
               </tr>
               <tr>
-                <td><code>ollama_base_url</code></td>
+                <td><code>llm_base_url</code></td>
                 <td>string</td>
-                <td>Base URL of the Ollama service.</td>
+                <td>Base URL of the llama-server endpoint.</td>
               </tr>
               <tr>
                 <td><code>nominatim_base_url</code></td>
@@ -435,8 +435,8 @@
           html += `
             <div class="model-info">
               <div class="model-info-title">Model Information</div>
-              <div><strong>Model:</strong> ${data.model_info.ollama_model || 'N/A'}</div>
-              <div><strong>Ollama URL:</strong> ${data.model_info.ollama_base_url || 'N/A'}</div>
+              <div><strong>Model:</strong> ${data.model_info.llm_model || 'N/A'}</div>
+              <div><strong>LLM URL:</strong> ${data.model_info.llm_base_url || 'N/A'}</div>
               <div><strong>Nominatim URL:</strong> ${data.model_info.nominatim_base_url || 'N/A'}</div>
               <div><strong>Config Hash:</strong> ${data.model_info.config_hash || 'N/A'}</div>
               <div><strong>Document ID:</strong> ${data.doc_id || 'N/A'}</div>

@@ -21,7 +21,7 @@ def _sanitize_model_name(model: str) -> str:
 def run(
     input_path: Path = typer.Argument(..., help="Path to dataset.jsonl"),
     output_path: Path = typer.Argument(..., help="Path to predictions.jsonl"),
-    model: str | None = typer.Option(None, help="Override Ollama model"),
+    model: str | None = typer.Option(None, help="Override LLM model"),
     thinking: bool | None = typer.Option(
         None, "--thinking/--no-thinking", help="Toggle model thinking if supported"
     ),
@@ -42,7 +42,7 @@ def run(
 def bench(
     input_path: Path = typer.Argument(..., help="Path to dataset.jsonl"),
     output_dir: Path = typer.Argument(..., help="Output directory for predictions"),
-    models: list[str] = typer.Option(..., help="Ollama models to benchmark"),
+    models: list[str] = typer.Option(..., help="LLM models to benchmark"),
     thinking: bool | None = typer.Option(
         None, "--thinking/--no-thinking", help="Toggle model thinking if supported"
     ),

@@ -1,13 +1,7 @@
 """OpenAI-compatible LLM client using httpx.
 
-Replaces the Ollama-native client. Targets any OpenAI-compatible endpoint,
-including llama-server (http://10.108.45.102:8080/v1 on the k8s cluster).
-
-Key differences from the Ollama client:
-  - Endpoint: /v1/chat/completions  (not /api/chat)
-  - Structured output: response_format.json_schema  (not format: schema)
-  - Thinking suppression: options.think=False in body (Qwen3 via llama-server)
-  - Authorization: Bearer token via Authorization header
+Targets any OpenAI-compatible endpoint, including llama-server
+(http://10.108.45.102:8080/v1 on the k8s cluster).
 """
 
 from __future__ import annotations
