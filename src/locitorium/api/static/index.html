@@ -39,13 +39,9 @@
             <label for="q">Text</label>
             <textarea id="q" name="q" placeholder="Paste text here..."></textarea>
             
-            <label for="model">Model (optional)</label>
-            <select id="model" name="model">
-              <option value="granite4:3b" selected>granite4:3b</option>
-              <option value="granite4:1b-h">granite4:1b-h</option>
-              <option value="granite3.3:2b">granite3.3:2b</option>
-              <option value="granite3.2:8b">granite3.2:8b</option>
-              <option value="ministral-3:3b">ministral-3:3b</option>
+            <label for="model">Model</label>
+            <select id="model" name="model" disabled>
+              <option value="gvt-llm" selected>Qwen3.6-35B-A3B (gvt-llm)</option>
             </select>
             
             <button type="submit" id="submitBtn">Resolve Locations</button>
