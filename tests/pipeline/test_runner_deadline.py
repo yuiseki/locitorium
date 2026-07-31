@@ -18,11 +18,11 @@ def test_runner_timeout(monkeypatch):
 
 
 def test_resolver_fills_missing_results():
-    from locitorium.clients.ollama import OllamaClient
+    from locitorium.clients.llm import LlmClient
     from locitorium.models.schema import Candidate
     from locitorium.pipeline.resolver import resolve_candidates
 
-    class StubClient(OllamaClient):
+    class StubClient(LlmClient):
         async def generate(self, prompt, schema, tag=""):
             return {
                 "results": [
