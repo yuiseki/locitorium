@@ -104,7 +104,7 @@ PY
 # 例:
 model=$(head -n 1 "$run_id/models.txt")
 /usr/bin/time -p \
-  uv run locitorium run \
+  uv run locitorium eval run \
   tmp/phase0_10.jsonl \
   "$run_id/predictions_$(echo "$model" | tr '/:' '__').jsonl" \
   --model "$model"
@@ -117,7 +117,7 @@ model=$(head -n 1 "$run_id/models.txt")
 # 予測ファイルごとにスコア算出
 for f in "$run_id"/predictions_*.jsonl; do
   echo "=== $f ==="
-  uv run locitorium eval tmp/phase0_10.jsonl "$f" --k 5
+  uv run locitorium eval score tmp/phase0_10.jsonl "$f" --k 5
 done
 ```
 

@@ -1,77 +1,123 @@
+"""Top-level CLI.
+
+``locitorium resolve`` is the pipeline stage: JSONL on stdin, JSONL on
+stdout, one row per mention, identifiers carried through so that
+downstream steps can be rebuilt without re-running resolution.
+
+``locitorium eval ...`` holds the evaluation and benchmarking commands.
+"""
+
 from __future__ import annotations
 
 import asyncio
+import json
+import sys
 from pathlib import Path
 
 import typer
 
-from locitorium.config import config_from_env
-from locitorium.eval.io import load_gold, load_predictions, read_jsonl, write_jsonl
-from locitorium.eval.metrics import topk_accuracy
-from locitorium.pipeline.runner import run_dataset, run_dataset_stream
+from locitorium.config import AppConfig
+from locitorium.eval.cli import app as eval_app
+from locitorium.pipeline.stream import (
+    DEFAULT_SERVER_URL,
+    FAILURE_STATUSES,
+    StreamOptions,
+    load_resolved_rows,
+    read_jsonl_stream,
+    resolve_records,
+)
 
-app = typer.Typer(add_completion=False)
-
-
-def _sanitize_model_name(model: str) -> str:
-    return model.replace("/", "_").replace(":", "_")
+app = typer.Typer(add_completion=False, help="Locitorium command line tools.")
+app.add_typer(eval_app, name="eval")
 
 
 @app.command()
-def run(
-    input_path: Path = typer.Argument(..., help="Path to dataset.jsonl"),
-    output_path: Path = typer.Argument(..., help="Path to predictions.jsonl"),
-    model: str | None = typer.Option(None, help="Override LLM model"),
-    thinking: bool | None = typer.Option(
-        None, "--thinking/--no-thinking", help="Toggle model thinking if supported"
+def resolve(
+    input_path: Path | None = typer.Option(
+        None, "--input", help="Input JSONL path (default: stdin)"
     ),
-    debug_dir: Path | None = typer.Option(None, help="Write raw prompts/responses"),
-) -> None:
-    config = config_from_env()
-    if model or debug_dir or thinking is not None:
-        config = config_from_env(
-            openai_model=model or config.openai_model,
-            debug_dir=str(debug_dir) if debug_dir else None,
-            openai_thinking=thinking,
-        )
-    docs = read_jsonl(input_path)
-    asyncio.run(run_dataset_stream(docs, config, str(output_path)))
-
-
-@app.command()
-def bench(
-    input_path: Path = typer.Argument(..., help="Path to dataset.jsonl"),
-    output_dir: Path = typer.Argument(..., help="Output directory for predictions"),
-    models: list[str] = typer.Option(..., help="LLM models to benchmark"),
-    thinking: bool | None = typer.Option(
-        None, "--thinking/--no-thinking", help="Toggle model thinking if supported"
+    output_path: Path | None = typer.Option(
+        None, "--output", help="Output JSONL path (default: stdout)"
     ),
-    debug_dir: Path | None = typer.Option(None, help="Write raw prompts/responses"),
+    text_field: str = typer.Option(
+        "text", "--text-field", help="Input field holding the text to resolve"
+    ),
+    id_field: str = typer.Option(
+        "id", "--id-field", help="Input field holding the record identifier"
+    ),
+    server_url: str = typer.Option(
+        DEFAULT_SERVER_URL, "--server-url", help="Locitorium server base URL"
+    ),
+    model: str | None = typer.Option(None, "--model", help="Override LLM model"),
+    max_chars: int = typer.Option(
+        AppConfig.max_chars, "--max-chars", help="Per-request input character limit"
+    ),
+    on_too_long: str = typer.Option(
+        "error",
+        "--on-too-long",
+        help="What to do when text exceeds --max-chars: error, split or truncate",
+    ),
+    include_candidates: bool = typer.Option(
+        False, "--include-candidates", help="Keep the candidate list in each row"
+    ),
+    resume_path: Path | None = typer.Option(
+        None,
+        "--resume",
+        help="Reuse rows for identifiers already present in this output JSONL",
+    ),
+    timeout_s: float = typer.Option(
+        120.0, "--timeout", help="HTTP timeout per request in seconds"
+    ),
+    quiet: bool = typer.Option(False, "--quiet", help="Suppress progress on stderr"),
 ) -> None:
-    docs = read_jsonl(input_path)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    for model in models:
-        model_debug_dir = None
-        if debug_dir:
-            model_debug_dir = debug_dir / _sanitize_model_name(model)
-        config = config_from_env(
-            openai_model=model,
-            debug_dir=str(model_debug_dir) if model_debug_dir else None,
-            openai_thinking=thinking,
+    """Resolve place mentions for each JSONL record (JSONL in, JSONL out)."""
+    if on_too_long not in {"error", "split", "truncate"}:
+        raise typer.BadParameter(
+            "must be error, split or truncate", param_hint="--on-too-long"
         )
-        out_path = output_dir / f"predictions_{_sanitize_model_name(model)}.jsonl"
-        asyncio.run(run_dataset_stream(docs, config, str(out_path)))
-        typer.echo(f"wrote {out_path}")
+    if max_chars <= 0:
+        raise typer.BadParameter("must be positive", param_hint="--max-chars")
 
+    options = StreamOptions(
+        text_field=text_field,
+        id_field=id_field,
+        max_chars=max_chars,
+        on_too_long=on_too_long,
+        include_candidates=include_candidates,
+    )
 
-@app.command()
-def eval(
-    gold_path: Path = typer.Argument(..., help="Path to dataset.jsonl"),
-    pred_path: Path = typer.Argument(..., help="Path to predictions.jsonl"),
-    k: int = typer.Option(5, help="k for top-k accuracy"),
-) -> None:
-    gold = load_gold(gold_path)
-    preds = load_predictions(pred_path)
-    metrics = topk_accuracy(gold, preds, k)
-    for key, value in metrics.items():
-        typer.echo(f"{key}: {value}")
+    def progress(message: str) -> None:
+        if not quiet:
+            print(message, file=sys.stderr, flush=True)
+
+    resume_rows = load_resolved_rows(resume_path) if resume_path else None
+    records = read_jsonl_stream(input_path)
+    out = sys.stdout if output_path is None else output_path.open("w", encoding="utf-8")
+
+    async def _run() -> int:
+        failures = 0
+        async for row in resolve_records(
+            records,
+            options,
+            server_url=server_url,
+            model=model,
+            timeout_s=timeout_s,
+            resume_rows=resume_rows,
+            progress=progress,
+        ):
+            if row["status"] in FAILURE_STATUSES:
+                failures += 1
+            out.write(json.dumps(row, ensure_ascii=False))
+            out.write("\n")
+            out.flush()
+        return failures
+
+    try:
+        failures = asyncio.run(_run())
+    finally:
+        if output_path is not None:
+            out.close()
+
+    if failures:
+        progress(f"{failures} record(s) could not be sent to locitorium")
+        raise typer.Exit(code=1)
