@@ -8,7 +8,8 @@ Phase 0 focuses on grounded country-level toponym resolution using a minimal, me
 
 - **API Server**: FastAPI-based REST API for location resolution
 - **Interactive Web UI**: Playground with real-time map visualization using MapLibre GL JS
-- **CLI Tools**: `locitorium resolve` for pipelines (JSONL in, JSONL out),
+- **CLI Tools**: `locitorium resolve` for pipelines (JSONL in; JSONL, JSON,
+  CSV or GeoJSON out),
   `locitorium eval` for batch processing, benchmarking and evaluation
 - **LLM Integration**: Ollama-powered semantic extraction
 - **OSM Grounding**: Nominatim (OpenStreetMap) for accurate location data
@@ -39,8 +40,8 @@ See the interactive API documentation at http://localhost:8010#docs
 
 ## Quickstart - CLI (pipeline)
 
-`locitorium resolve` is a pipeline stage: JSONL in, JSONL out, one row per
-mention. It talks to a running locitorium server (`--server-url`, default
+`locitorium resolve` is a pipeline stage: JSONL in, one row per mention out
+(JSONL by default, see `--format`). It talks to a running locitorium server (`--server-url`, default
 `http://127.0.0.1:30101`), so resolved places can be kept as their own file
 and downstream steps rebuilt without re-running resolution.
 
@@ -56,6 +57,22 @@ echo '{"id":"s1","text":"鎌ヶ谷市の様子です"}' \
 Options:
 
 - `--input` / `--output`: file paths; default stdin/stdout
+- `--format jsonl|json|csv|geojson` (default `jsonl`):
+  - `jsonl`: one row per line; streams, so it is what pipes and `--resume`
+    want
+  - `json`: a single JSON array of the same rows, for `jq` in one pass or
+    for tools that read the whole result as one document
+  - `csv`: the fixed column set with a header, for spreadsheets
+    (`--include-candidates` puts the candidate list in a JSON cell)
+  - `geojson`: a `FeatureCollection` of `Point` features (`lat`/`lon`
+    become the geometry, the rest stays in `properties`), so the output
+    drops straight into QGIS, MapLibre or `ogr2ogr`. Rows without
+    coordinates keep a `null` geometry instead of vanishing
+
+  `json` and `geojson` are single documents: the closing bracket can only
+  be written once every record has been read, so an interrupted run leaves
+  an incomplete document. Progress goes to stderr and never mixes into the
+  document, and `--resume` reads JSONL only.
 - `--text-field` / `--id-field`: input field names (default `text` / `id`);
   the identifier is copied to `input_id` on every output row
 - `--max-chars` (default 2000) and `--on-too-long error|split|truncate`
@@ -77,6 +94,10 @@ locitorium (`missing_text`, `input_too_long`, `server_error`).
 ```bash
 # resolved places only, as CSV
 jq -r 'select(.status=="resolved") | [.input_id,.osm_id,.display_name] | @csv' places.jsonl
+
+# straight to a map layer
+echo '{"id":"s1","text":"鎌ヶ谷市の様子です"}' \
+  | uv run locitorium resolve --format geojson > places.geojson
 ```
 
 ## Quickstart - CLI (evaluation)

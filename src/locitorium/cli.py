@@ -1,8 +1,9 @@
 """Top-level CLI.
 
-``locitorium resolve`` is the pipeline stage: JSONL on stdin, JSONL on
-stdout, one row per mention, identifiers carried through so that
-downstream steps can be rebuilt without re-running resolution.
+``locitorium resolve`` is the pipeline stage: JSONL on stdin, one row
+per mention on stdout, identifiers carried through so that downstream
+steps can be rebuilt without re-running resolution. ``--format`` picks
+the output shape (``jsonl`` by default).
 
 ``locitorium eval ...`` holds the evaluation and benchmarking commands.
 """
@@ -10,7 +11,6 @@ downstream steps can be rebuilt without re-running resolution.
 from __future__ import annotations
 
 import asyncio
-import json
 import sys
 from pathlib import Path
 
@@ -18,6 +18,12 @@ import typer
 
 from locitorium.config import AppConfig
 from locitorium.eval.cli import app as eval_app
+from locitorium.pipeline.output import (
+    FORMAT_JSONL,
+    OUTPUT_FORMATS,
+    STREAMING_FORMATS,
+    open_writer,
+)
 from locitorium.pipeline.stream import (
     DEFAULT_SERVER_URL,
     FAILURE_STATUSES,
@@ -37,7 +43,12 @@ def resolve(
         None, "--input", help="Input JSONL path (default: stdin)"
     ),
     output_path: Path | None = typer.Option(
-        None, "--output", help="Output JSONL path (default: stdout)"
+        None, "--output", help="Output path (default: stdout)"
+    ),
+    output_format: str = typer.Option(
+        FORMAT_JSONL,
+        "--format",
+        help="Output format: jsonl (default), json, csv or geojson",
     ),
     text_field: str = typer.Option(
         "text", "--text-field", help="Input field holding the text to resolve"
@@ -63,14 +74,18 @@ def resolve(
     resume_path: Path | None = typer.Option(
         None,
         "--resume",
-        help="Reuse rows for identifiers already present in this output JSONL",
+        help="Reuse rows for identifiers already present in this JSONL output",
     ),
     timeout_s: float = typer.Option(
         120.0, "--timeout", help="HTTP timeout per request in seconds"
     ),
     quiet: bool = typer.Option(False, "--quiet", help="Suppress progress on stderr"),
 ) -> None:
-    """Resolve place mentions for each JSONL record (JSONL in, JSONL out)."""
+    """Resolve place mentions for each JSONL record (JSONL in)."""
+    if output_format not in OUTPUT_FORMATS:
+        raise typer.BadParameter(
+            "must be one of " + ", ".join(OUTPUT_FORMATS), param_hint="--format"
+        )
     if on_too_long not in {"error", "split", "truncate"}:
         raise typer.BadParameter(
             "must be error, split or truncate", param_hint="--on-too-long"
@@ -90,9 +105,20 @@ def resolve(
         if not quiet:
             print(message, file=sys.stderr, flush=True)
 
+    if output_format not in STREAMING_FORMATS:
+        # json / geojson are one document each: the closing bracket can
+        # only be written once every record has been read, so an
+        # interrupted run leaves an incomplete document behind. Progress
+        # still goes to stderr, which never mixes into that document.
+        progress(
+            f"format {output_format} writes a single document; "
+            "output is only complete when the run finishes"
+        )
+
     resume_rows = load_resolved_rows(resume_path) if resume_path else None
     records = read_jsonl_stream(input_path)
     out = sys.stdout if output_path is None else output_path.open("w", encoding="utf-8")
+    writer = open_writer(output_format, out, include_candidates=include_candidates)
 
     async def _run() -> int:
         failures = 0
@@ -107,13 +133,12 @@ def resolve(
         ):
             if row["status"] in FAILURE_STATUSES:
                 failures += 1
-            out.write(json.dumps(row, ensure_ascii=False))
-            out.write("\n")
-            out.flush()
+            writer.write(row)
         return failures
 
     try:
         failures = asyncio.run(_run())
+        writer.close()
     finally:
         if output_path is not None:
             out.close()
